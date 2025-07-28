@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Scan QR Code gratis dengan VIN NESIA. Pindai QR langsung dari kamera atau upload gambar, tampilkan hasil secara otomatis, salin ke clipboard, dan buka URL jika tersedia.">
-    <meta name="keywords" content="scan QR code, pemindai QR, QR scanner, tools SEO, pengembangan web, VIN NESIA">
-    <meta property="og:title" content="SCAN QR VIN NESIA - Pemindai QR Code Gratis">
-    <meta property="og:description" content="Pindai QR Code dengan mudah menggunakan kamera atau upload gambar. Aman, cepat, dan gratis dari VIN NESIA.">
+    <meta name="description" content="Free QR Code scanner with VIN NESIA. Scan QR codes directly from camera or upload images, display results automatically, copy to clipboard, and open URLs if available.">
+    <meta name="keywords" content="scan QR code, QR scanner, QR reader, SEO tools, web development, VIN NESIA">
+    <meta property="og:title" content="SCAN QR VIN NESIA - Free QR Code Scanner">
+    <meta property="og:description" content="Scan QR Codes easily using camera or upload images. Safe, fast, and free from VIN NESIA.">
     <meta property="og:url" content="https://scan.vinnesia.my.id">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://www.vinnesia.my.id/og-image.jpg">
     <meta property="og:site_name" content="VIN NESIA">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SCAN QR VIN NESIA - Pemindai QR Code Gratis">
-    <meta name="twitter:description" content="Pindai QR Code dengan mudah menggunakan kamera atau upload gambar. Aman, cepat, dan gratis dari VIN NESIA.">
-    <title>SCAN QR VIN NESIA - Pemindai QR Code Gratis</title>
+    <meta name="twitter:title" content="SCAN QR VIN NESIA - Free QR Code Scanner">
+    <meta name="twitter:description" content="Scan QR Codes easily using camera or upload images. Safe, fast, and free from VIN NESIA.">
+    <title>SCAN QR VIN NESIA - Professional QR Code Scanner</title>
     <link rel="icon" href="favicon.ico">
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3PYZXZFNER"></script>
@@ -24,179 +24,422 @@
       gtag('js', new Date());
       gtag('config', 'G-3PYZXZFNER');
     </script>
-    <!-- Library untuk Scan Kamera -->
+    <!-- Camera Scan Library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <!-- Library untuk Scan Gambar (jsQR) -->
+    <!-- Image Scan Library (jsQR) -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(to bottom, #4B0082, #000000, #006400); /* Ungu, hitam, hijau kehitaman */
-            color: #FFD700; /* Emas */
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        header {
-            display: flex; /* Mengaktifkan flexbox */
-            align-items: center; /* Menyelaraskan item secara vertikal */
-            padding: 15px 25px; /* Padding atas-bawah dan kiri-kanan */
-            background: rgba(0, 0, 0, 0.7);
-            width: 100%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
             box-sizing: border-box;
         }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+            background: linear-gradient(135deg, #2d1b69 0%, #11998e 50%, #1a1a2e 100%);
+            background-attachment: fixed;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 1rem;
+        }
+
         header img {
-            height: 50px; /* Menetapkan tinggi logo */
-            width: auto; /* Lebar akan menyesuaikan secara otomatis */
-            margin-right: 20px; /* Jarak antara logo dan judul */
+            height: 50px;
+            width: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
+
         header h1 {
-            color: #FFD700; /* Emas */
-            margin: 0; /* Menghapus margin default */
-            font-size: 1.8em;
+            color: #00f5a0;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: -0.02em;
         }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
         .container {
-            max-width: 800px;
-            width: 90%;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            margin: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
+
+        .container h2 {
+            color: #00f5a0;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* QR Reader Area */
         #reader {
             width: 100%;
             max-width: 500px;
-            height: 300px;
-            background: #333;
-            border-radius: 10px;
-            margin: 0 auto 20px auto;
-            border: 1px solid #FFD700;
+            height: 350px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 16px;
+            margin: 0 auto 2rem auto;
+            border: 2px solid #00f5a0;
+            box-shadow: 0 8px 24px rgba(0, 245, 160, 0.2);
+            overflow: hidden;
         }
+
+        /* Button Styles */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
         button, .file-input-wrapper {
-            background: #FFD700; /* Emas */
-            color: #000;
+            background: linear-gradient(135deg, #00f5a0, #00d4aa);
+            color: #1a1a2e;
             border: none;
-            padding: 12px 22px;
-            margin: 8px;
-            border-radius: 5px;
+            padding: 1rem 2rem;
+            border-radius: 12px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
-            display: inline-block;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(0, 245, 160, 0.3);
+            min-width: 160px;
+            position: relative;
+            overflow: hidden;
         }
+
         button:hover, .file-input-wrapper:hover {
-            background: #DAA520;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 245, 160, 0.4);
+            background: linear-gradient(135deg, #00d4aa, #00b894);
         }
+
+        button:active, .file-input-wrapper:active {
+            transform: translateY(0);
+        }
+
         input[type="file"] {
             display: none;
         }
+
+        /* Result Area */
         #result {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin: 2rem 0;
             word-wrap: break-word;
-            min-height: 50px;
-            color: #FFFFFF;
+            min-height: 80px;
+            color: #ffffff;
             text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
         #openLink {
             display: none;
-            background-color: #008000;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
             color: white;
             text-decoration: none;
-            padding: 12px 22px;
-            margin: 8px;
-            border-radius: 5px;
-            font-weight: bold;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
         }
+
+        #openLink:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.4);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Footer */
         footer {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 2rem 1rem;
             text-align: center;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             margin-top: auto;
         }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         footer a {
-            color: #FFD700;
+            color: #00f5a0;
             text-decoration: none;
-            margin: 0 10px;
+            transition: all 0.3s ease;
+            margin: 0 0.5rem;
         }
+
         footer a:hover {
-            text-decoration: underline;
+            color: #00d4aa;
+            text-shadow: 0 0 8px rgba(0, 245, 160, 0.5);
         }
-        @media (max-width: 600px) {
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
             header {
-                padding: 10px 15px;
+                padding: 1rem;
             }
+
+            .header-content {
+                gap: 0.75rem;
+            }
+
             header img {
                 height: 40px;
             }
-            header h1 {
-                font-size: 1.4em;
+
+            main {
+                padding: 1rem;
             }
+
             .container {
-                width: 95%;
-                padding: 15px;
+                padding: 1.5rem;
+                border-radius: 16px;
             }
+
+            #reader {
+                height: 280px;
+                max-width: 100%;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button, .file-input-wrapper, #openLink {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .contact-info {
+                grid-template-columns: 1fr;
+                gap: 0.25rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+
             #reader {
                 height: 250px;
             }
-            button, .file-input-wrapper, #openLink {
-                width: calc(100% - 16px);
-                box-sizing: border-box;
+
+            button, .file-input-wrapper {
+                padding: 0.875rem 1.5rem;
+                font-size: 0.95rem;
             }
+
+            #result {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #00f5a0;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success/Error States */
+        .success {
+            border-left: 4px solid #00f5a0;
+            background: rgba(0, 245, 160, 0.1);
+        }
+
+        .error {
+            border-left: 4px solid #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
         }
     </style>
 </head>
 <body>
     <header>
-        <img src="logo.png" alt="Logo VIN NESIA" onerror="this.style.display='none'">
-        <h1>SCAN QR VIN NESIA</h1>
+        <div class="header-content">
+            <img src="logo.png" alt="VIN NESIA Logo" onerror="this.style.display='none'">
+            <h1>QR SCANNER VIN NESIA</h1>
+        </div>
     </header>
-    <div class="container">
-        <h2>Pindai QR Code</h2>
-        <div id="reader"></div>
-        <button id="startScan">Mulai Pindai dari Kamera</button>
-        <label for="qrFile" class="file-input-wrapper">Pindai dari Gambar</label>
-        <input type="file" id="qrFile" accept="image/*">
-        
-        <div id="result">Hasil pemindaian akan muncul di sini.</div>
-        
-        <button id="copyButton" style="display: none;">Salin Hasil</button>
-        <a id="openLink" href="#" target="_blank">Buka Tautan</a>
-        <button id="downloadButton" style="display: none;">Unduh Hasil (.txt)</button>
-    </div>
+
+    <main>
+        <div class="container">
+            <h2>Professional QR Code Scanner</h2>
+            <div id="reader"></div>
+            
+            <div class="button-group">
+                <button id="startScan">📱 Start Camera Scan</button>
+                <label for="qrFile" class="file-input-wrapper">📁 Upload Image</label>
+                <input type="file" id="qrFile" accept="image/*">
+            </div>
+            
+            <div id="result">Scan results will appear here. Point your camera at a QR code or upload an image to get started.</div>
+            
+            <div class="action-buttons">
+                <button id="copyButton" class="hidden">📋 Copy Result</button>
+                <a id="openLink" href="#" target="_blank">🔗 Open Link</a>
+                <button id="downloadButton" class="hidden">💾 Download (.txt)</button>
+            </div>
+        </div>
+    </main>
+
     <footer>
-        <a href="https://www.vinnesia.my.id">Kembali ke Halaman Utama</a><br>
-        © 2025 VIN NESIA. All rights reserved.<br>
-        📧 <a href="mailto:support@vinnesia.my.id">support@vinnesia.my.id</a><br>
-        🧑‍💻 Instagram: <a href="https://instagram.com/vin.nesia.id">@vin.nesia.id</a><br>
-        📱 WhatsApp: +62 895-3545-11777<br>
-        📍 Indonesia<br>
-        <a href="https://www.vinnesia.my.id/privacy">Privacy Policy</a>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.vinnesia.my.id">🏠 Back to Homepage</a>
+                <a href="https://www.vinnesia.my.id/privacy">🔒 Privacy Policy</a>
+            </div>
+            
+            <div class="contact-info">
+                <div>📧 <a href="mailto:support@vinnesia.my.id">support@vinnesia.my.id</a></div>
+                <div>📱 <a href="https://instagram.com/vin.nesia.id">@vin.nesia.id</a></div>
+                <div>💬 WhatsApp: +62 895-3545-11777</div>
+                <div>📍 Indonesia</div>
+            </div>
+            
+            <p>© 2025 VIN NESIA. All rights reserved.</p>
+        </div>
     </footer>
+
     <script>
         const html5QrCode = new Html5Qrcode("reader");
         const resultContainer = document.getElementById('result');
         const copyButton = document.getElementById('copyButton');
         const openLink = document.getElementById('openLink');
         const downloadButton = document.getElementById('downloadButton');
+        const startScanButton = document.getElementById('startScan');
         let lastResult = '';
+        let isScanning = false;
+
+        function showResult(text, isSuccess = true) {
+            resultContainer.className = isSuccess ? 'success' : 'error';
+            resultContainer.innerHTML = text;
+        }
+
+        function hideActionButtons() {
+            copyButton.classList.add('hidden');
+            downloadButton.classList.add('hidden');
+            openLink.style.display = 'none';
+        }
+
+        function showActionButtons() {
+            copyButton.classList.remove('hidden');
+            downloadButton.classList.remove('hidden');
+        }
 
         function onScanSuccess(decodedText) {
             lastResult = decodedText;
-            resultContainer.innerHTML = `<strong>Hasil:</strong><br>${decodedText}`;
-            copyButton.style.display = 'inline-block';
-            downloadButton.style.display = 'inline-block';
+            showResult(`<strong>✅ Scan Successful!</strong><br><br>${decodedText}`, true);
+            showActionButtons();
 
+            // Check if result is a URL
             try {
                 const url = new URL(decodedText);
                 if (url.protocol === "http:" || url.protocol === "https:") {
@@ -207,35 +450,62 @@
                 openLink.style.display = 'none';
             }
 
+            // Stop camera scanning
             if (html5QrCode.isScanning) {
-                html5QrCode.stop().catch(err => console.error('Gagal menghentikan scan kamera:', err));
+                html5QrCode.stop().then(() => {
+                    startScanButton.innerHTML = '📱 Start Camera Scan';
+                    isScanning = false;
+                }).catch(err => console.error('Failed to stop camera scan:', err));
             }
         }
         
         function onScanFailure() {
-            // Fungsi ini sengaja dikosongkan untuk scan kamera agar tidak menampilkan pesan error berulang
+            // Keep this empty for camera scan to avoid repeated error messages
         }
 
-        document.getElementById('startScan').addEventListener('click', () => {
-            resultContainer.innerHTML = "Arahkan kamera ke QR code...";
-            openLink.style.display = 'none';
-            copyButton.style.display = 'none';
-            downloadButton.style.display = 'none';
-            
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess,
-                onScanFailure
-            ).catch(err => {
-                resultContainer.innerHTML = `<strong>Error:</strong> Tidak dapat mengakses kamera. Pastikan Anda memberikan izin.`;
-                console.error('Gagal memulai scan:', err)
-            });
+        // Start/Stop Camera Scan
+        startScanButton.addEventListener('click', () => {
+            if (isScanning) {
+                // Stop scanning
+                html5QrCode.stop().then(() => {
+                    startScanButton.innerHTML = '📱 Start Camera Scan';
+                    isScanning = false;
+                    showResult('Camera scan stopped. Click "Start Camera Scan" to scan again or upload an image.', true);
+                }).catch(err => {
+                    console.error('Failed to stop scan:', err);
+                    showResult('<strong>❌ Error:</strong> Failed to stop camera scan.', false);
+                });
+            } else {
+                // Start scanning
+                showResult('<div class="loading">📸 Starting camera scan... Point your camera at a QR code</div>', true);
+                hideActionButtons();
+                
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { 
+                        fps: 10, 
+                        qrbox: { width: 250, height: 250 },
+                        aspectRatio: 1.0
+                    },
+                    onScanSuccess,
+                    onScanFailure
+                ).then(() => {
+                    startScanButton.innerHTML = '⏹️ Stop Scanning';
+                    isScanning = true;
+                }).catch(err => {
+                    showResult('<strong>❌ Error:</strong> Cannot access camera. Please ensure you grant camera permission and try again.', false);
+                    console.error('Failed to start scan:', err);
+                });
+            }
         });
 
+        // Upload Image Scan
         document.getElementById('qrFile').addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) return;
+
+            showResult('<div class="loading">📄 Processing image...</div>', true);
+            hideActionButtons();
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -254,35 +524,40 @@
                     if (code) {
                         onScanSuccess(code.data);
                     } else {
-                        resultContainer.innerHTML = '<strong>Gagal:</strong> QR Code tidak dapat ditemukan atau tidak terbaca pada gambar. Coba gambar yang lebih jelas.';
-                        openLink.style.display = 'none';
-                        copyButton.style.display = 'none';
-                        downloadButton.style.display = 'none';
+                        showResult('<strong>❌ Scan Failed:</strong> No QR code found in the image. Please try a clearer image with a visible QR code.', false);
+                        hideActionButtons();
                     }
                 };
                 image.onerror = function() {
-                    resultContainer.innerHTML = '<strong>Error:</strong> Gagal memuat file gambar.';
+                    showResult('<strong>❌ Error:</strong> Failed to load image file. Please try a different image.', false);
+                    hideActionButtons();
                 };
                 image.src = e.target.result;
             };
             reader.readAsDataURL(file);
         });
 
+        // Copy to Clipboard
         copyButton.addEventListener('click', () => {
             navigator.clipboard.writeText(lastResult).then(() => {
-                alert('Hasil berhasil disalin ke clipboard!');
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = '✅ Copied!';
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                }, 2000);
             }).catch(err => {
-                console.error('Gagal menyalin teks: ', err);
-                alert('Gagal menyalin. Coba lagi.');
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy. Please try again.');
             });
         });
 
+        // Download Result
         downloadButton.addEventListener('click', () => {
             const blob = new Blob([lastResult], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'hasil-scan-qr.txt';
+            a.download = 'qr-scan-result.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
