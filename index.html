@@ -24,8 +24,8 @@
       gtag('js', new Date());
       gtag('config', 'G-3PYZXZFNER');
     </script>
-    <!-- html5-qrcode CDN -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- jsQR CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -68,6 +68,23 @@
             background: #fff;
             border-radius: 10px;
             margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #reader video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #preview {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        #qrCanvas {
+            display: none;
         }
         button, input[type="file"] {
             background: #FFD700; /* Emas */
@@ -114,6 +131,9 @@
             #reader {
                 height: 200px;
             }
+            #preview {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -124,9 +144,11 @@
     </header>
     <div class="container">
         <h2>Pindai QR Code</h2>
-        <div id="reader"></div>
+        <div id="reader"><video id="video" playsinline></video></div>
         <button id="startScan">Mulai Pindai dari Kamera</button>
-        <input type="file" id="qrFile" accept="image/*">
+        <input type="file" id="qrFile" accept="image/png, image/jpeg">
+        <img id="preview" alt="Preview Gambar">
+        <canvas id="qrCanvas"></canvas>
         <div id="result"></div>
         <button id="copyButton" style="display: none;">Salin ke Clipboard</button>
         <a id="openLink" href="#" target="_blank" style="display: none;">Buka Tautan</a>
@@ -142,15 +164,20 @@
         <a href="https://www.vinnesia.my.id/privacy">Privacy Policy</a>
     </footer>
     <script>
-        const html5QrCode = new Html5Qrcode("reader");
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('qrCanvas');
+        const ctx = canvas.getContext('2d');
         const resultContainer = document.getElementById('result');
         const copyButton = document.getElementById('copyButton');
         const openLink = document.getElementById('openLink');
         const downloadButton = document.getElementById('downloadButton');
+        const preview = document.getElementById('preview');
         let lastResult = '';
+        let scanning = false;
+        let scanInterval;
 
         // Fungsi untuk menangani hasil scan
-        function onScanSuccess(decodedText, decodedResult) {
+        function handleScanResult(decodedText) {
             lastResult = decodedText;
             resultContainer.innerHTML = `<strong>Hasil:</strong> ${decodedText}`;
             copyButton.style.display = 'inline';
@@ -165,30 +192,86 @@
                 openLink.style.display = 'none';
             }
 
-            // Hentikan scan setelah sukses
-            html5QrCode.stop().catch(err => console.error('Gagal menghentikan scan:', err));
+            // Hentikan scan jika dari kamera
+            if (scanning) {
+                stopCamera();
+            }
+        }
+
+        // Fungsi untuk scan dari canvas
+        function scanQR() {
+            try {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (code) {
+                    handleScanResult(code.data);
+                    return true;
+                }
+            } catch (err) {
+                console.error('Error during QR scan:', err);
+            }
+            return false;
         }
 
         // Mulai scan dari kamera
-        document.getElementById('startScan').addEventListener('click', () => {
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess,
-                (errorMessage) => {}
-            ).catch(err => console.error('Gagal memulai scan:', err));
+        document.getElementById('startScan').addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = stream;
+                video.play();
+                scanning = true;
+                preview.style.display = 'none'; // Sembunyikan preview jika ada
+
+                scanInterval = setInterval(() => {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        canvas.height = video.videoHeight;
+                        canvas.width = video.videoWidth;
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        scanQR();
+                    }
+                }, 1000 / 10); // 10 fps
+            } catch (err) {
+                console.error('Gagal memulai kamera:', err);
+                resultContainer.innerHTML = 'Gagal mengakses kamera.';
+            }
         });
+
+        // Hentikan kamera
+        function stopCamera() {
+            clearInterval(scanInterval);
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            scanning = false;
+        }
 
         // Upload gambar
         document.getElementById('qrFile').addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
-                html5QrCode.scanFile(file, true)
-                    .then(decodedText => onScanSuccess(decodedText))
-                    .catch(err => {
-                        resultContainer.innerHTML = 'Gagal mendeteksi QR Code dari gambar.';
-                        console.error('Error scanning file:', err);
-                    });
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Tampilkan preview secara proporsional (display scaled, tapi scan full size)
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+
+                        // Set canvas ke ukuran asli gambar, tanpa scaling paksa
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0, img.width, img.height);
+
+                        // Scan QR
+                        if (!scanQR()) {
+                            resultContainer.innerHTML = 'QR tidak terbaca.';
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             }
         });
 
