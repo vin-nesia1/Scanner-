@@ -9,7 +9,7 @@
     <meta property="og:description" content="Pindai QR Code dengan mudah menggunakan kamera atau upload gambar. Aman, cepat, dan gratis dari VIN NESIA.">
     <meta property="og:url" content="https://scan.vinnesia.my.id">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://www.vinnesia.my.id/og-image.jpg"> <!-- Asumsi gambar OG dari domain utama, sesuaikan jika perlu -->
+    <meta property="og:image" content="https://www.vinnesia.my.id/og-image.jpg">
     <meta property="og:site_name" content="VIN NESIA">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SCAN QR VIN NESIA - Pemindai QR Code Gratis">
@@ -24,11 +24,13 @@
       gtag('js', new Date());
       gtag('config', 'G-3PYZXZFNER');
     </script>
-    <!-- html5-qrcode CDN -->
+    <!-- Library untuk Scan Kamera -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- Library untuk Scan Gambar (jsQR) -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(to bottom, #4B0082, #000000, #006400); /* Ungu, hitam, hijau kehitaman */
             color: #FFD700; /* Emas */
             margin: 0;
@@ -39,58 +41,81 @@
             min-height: 100vh;
         }
         header {
-            text-align: center;
-            padding: 20px;
+            display: flex; /* Mengaktifkan flexbox */
+            align-items: center; /* Menyelaraskan item secara vertikal */
+            padding: 15px 25px; /* Padding atas-bawah dan kiri-kanan */
             background: rgba(0, 0, 0, 0.7);
             width: 100%;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
         }
         header img {
-            max-width: 200px;
-            height: auto;
+            height: 50px; /* Menetapkan tinggi logo */
+            width: auto; /* Lebar akan menyesuaikan secara otomatis */
+            margin-right: 20px; /* Jarak antara logo dan judul */
         }
-        h1 {
+        header h1 {
             color: #FFD700; /* Emas */
+            margin: 0; /* Menghapus margin default */
+            font-size: 1.8em;
         }
         .container {
             max-width: 800px;
-            width: 100%;
+            width: 90%;
             padding: 20px;
             background: rgba(0, 0, 0, 0.5);
             border-radius: 10px;
             margin: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
         }
         #reader {
             width: 100%;
             max-width: 500px;
             height: 300px;
-            background: #fff;
+            background: #333;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin: 0 auto 20px auto;
+            border: 1px solid #FFD700;
         }
-        button, input[type="file"] {
+        button, .file-input-wrapper {
             background: #FFD700; /* Emas */
             color: #000;
             border: none;
-            padding: 10px 20px;
-            margin: 10px;
+            padding: 12px 22px;
+            margin: 8px;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 16px;
+            display: inline-block;
+            transition: background-color 0.3s;
         }
-        button:hover, input[type="file"]:hover {
+        button:hover, .file-input-wrapper:hover {
             background: #DAA520;
         }
+        input[type="file"] {
+            display: none;
+        }
         #result {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
             border-radius: 5px;
             margin-top: 20px;
             word-wrap: break-word;
+            min-height: 50px;
+            color: #FFFFFF;
+            text-align: left;
         }
         #openLink {
             display: none;
+            background-color: #008000;
+            color: white;
+            text-decoration: none;
+            padding: 12px 22px;
+            margin: 8px;
+            border-radius: 5px;
+            font-weight: bold;
         }
         footer {
             text-align: center;
@@ -108,29 +133,46 @@
             text-decoration: underline;
         }
         @media (max-width: 600px) {
+            header {
+                padding: 10px 15px;
+            }
+            header img {
+                height: 40px;
+            }
+            header h1 {
+                font-size: 1.4em;
+            }
             .container {
-                padding: 10px;
+                width: 95%;
+                padding: 15px;
             }
             #reader {
-                height: 200px;
+                height: 250px;
+            }
+            button, .file-input-wrapper, #openLink {
+                width: calc(100% - 16px);
+                box-sizing: border-box;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <img src="logo.png" alt="Logo VIN NESIA">
+        <img src="logo.png" alt="Logo VIN NESIA" onerror="this.style.display='none'">
         <h1>SCAN QR VIN NESIA</h1>
     </header>
     <div class="container">
         <h2>Pindai QR Code</h2>
         <div id="reader"></div>
         <button id="startScan">Mulai Pindai dari Kamera</button>
+        <label for="qrFile" class="file-input-wrapper">Pindai dari Gambar</label>
         <input type="file" id="qrFile" accept="image/*">
-        <div id="result"></div>
-        <button id="copyButton" style="display: none;">Salin ke Clipboard</button>
-        <a id="openLink" href="#" target="_blank" style="display: none;">Buka Tautan</a>
-        <button id="downloadButton" style="display: none;">Download Hasil</button>
+        
+        <div id="result">Hasil pemindaian akan muncul di sini.</div>
+        
+        <button id="copyButton" style="display: none;">Salin Hasil</button>
+        <a id="openLink" href="#" target="_blank">Buka Tautan</a>
+        <button id="downloadButton" style="display: none;">Unduh Hasil (.txt)</button>
     </div>
     <footer>
         <a href="https://www.vinnesia.my.id">Kembali ke Halaman Utama</a><br>
@@ -149,65 +191,98 @@
         const downloadButton = document.getElementById('downloadButton');
         let lastResult = '';
 
-        // Fungsi untuk menangani hasil scan
-        function onScanSuccess(decodedText, decodedResult) {
+        function onScanSuccess(decodedText) {
             lastResult = decodedText;
-            resultContainer.innerHTML = `<strong>Hasil:</strong> ${decodedText}`;
-            copyButton.style.display = 'inline';
-            downloadButton.style.display = 'inline';
+            resultContainer.innerHTML = `<strong>Hasil:</strong><br>${decodedText}`;
+            copyButton.style.display = 'inline-block';
+            downloadButton.style.display = 'inline-block';
 
-            // Cek jika URL
-            if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
-                openLink.href = decodedText;
-                openLink.innerText = 'Buka Tautan';
-                openLink.style.display = 'inline';
-            } else {
+            try {
+                const url = new URL(decodedText);
+                if (url.protocol === "http:" || url.protocol === "https:") {
+                    openLink.href = decodedText;
+                    openLink.style.display = 'inline-block';
+                }
+            } catch (_) {
                 openLink.style.display = 'none';
             }
 
-            // Hentikan scan setelah sukses
-            html5QrCode.stop().catch(err => console.error('Gagal menghentikan scan:', err));
+            if (html5QrCode.isScanning) {
+                html5QrCode.stop().catch(err => console.error('Gagal menghentikan scan kamera:', err));
+            }
+        }
+        
+        function onScanFailure() {
+            // Fungsi ini sengaja dikosongkan untuk scan kamera agar tidak menampilkan pesan error berulang
         }
 
-        // Mulai scan dari kamera
         document.getElementById('startScan').addEventListener('click', () => {
+            resultContainer.innerHTML = "Arahkan kamera ke QR code...";
+            openLink.style.display = 'none';
+            copyButton.style.display = 'none';
+            downloadButton.style.display = 'none';
+            
             html5QrCode.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 onScanSuccess,
-                (errorMessage) => {}
-            ).catch(err => console.error('Gagal memulai scan:', err));
-        });
-
-        // Upload gambar
-        document.getElementById('qrFile').addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                html5QrCode.scanFile(file, true)
-                    .then(decodedText => onScanSuccess(decodedText))
-                    .catch(err => {
-                        resultContainer.innerHTML = 'Gagal mendeteksi QR Code dari gambar.';
-                        console.error('Error scanning file:', err);
-                    });
-            }
-        });
-
-        // Salin ke clipboard
-        copyButton.addEventListener('click', () => {
-            navigator.clipboard.writeText(lastResult).then(() => {
-                alert('Hasil disalin ke clipboard!');
-            }).catch(err => {
-                console.error('Gagal menyalin:', err);
+                onScanFailure
+            ).catch(err => {
+                resultContainer.innerHTML = `<strong>Error:</strong> Tidak dapat mengakses kamera. Pastikan Anda memberikan izin.`;
+                console.error('Gagal memulai scan:', err)
             });
         });
 
-        // Download hasil sebagai teks
+        document.getElementById('qrFile').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const image = new Image();
+                image.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d', { willReadFrequently: true });
+                    canvas.width = this.naturalWidth;
+                    canvas.height = this.naturalHeight;
+                    context.drawImage(this, 0, 0, canvas.width, canvas.height);
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+
+                    if (code) {
+                        onScanSuccess(code.data);
+                    } else {
+                        resultContainer.innerHTML = '<strong>Gagal:</strong> QR Code tidak dapat ditemukan atau tidak terbaca pada gambar. Coba gambar yang lebih jelas.';
+                        openLink.style.display = 'none';
+                        copyButton.style.display = 'none';
+                        downloadButton.style.display = 'none';
+                    }
+                };
+                image.onerror = function() {
+                    resultContainer.innerHTML = '<strong>Error:</strong> Gagal memuat file gambar.';
+                };
+                image.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        copyButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(lastResult).then(() => {
+                alert('Hasil berhasil disalin ke clipboard!');
+            }).catch(err => {
+                console.error('Gagal menyalin teks: ', err);
+                alert('Gagal menyalin. Coba lagi.');
+            });
+        });
+
         downloadButton.addEventListener('click', () => {
             const blob = new Blob([lastResult], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'hasil-qr.txt';
+            a.download = 'hasil-scan-qr.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
